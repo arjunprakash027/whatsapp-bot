@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  whatsapp-bot:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    container_name: whatsapp-bot
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
