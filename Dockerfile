@@ -9,6 +9,8 @@ COPY go.mod go.sum ./
 
 RUN go mod download
 
+RUN go mod tidy
+
 COPY . .
 
 CMD ["tail", "-f", "/dev/null"]
