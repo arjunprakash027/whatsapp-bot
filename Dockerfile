@@ -1,7 +1,7 @@
 # Stage 1: Build the Go application
-FROM golang:1.24-alpine AS builder
+FROM golang:1.24 AS builder
 
-RUN apk update && apk add --no-cache git curl bash procps
+RUN apt-get update && apt-get install git curl bash procps
 
 WORKDIR /app
 
