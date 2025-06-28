@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"os/exec"
 	"syscall"
 
 	"go.mau.fi/whatsmeow"
@@ -43,10 +44,44 @@ func main() {
 
 	if client.Store.ID == nil {
 		fmt.Println("No device ID found, please scan the QR code.")
-		// if err := client.Login(); err != nil {
-		// 	panic(err)
-		// }
+		
+		qrChan, _ := client.GetQRChannel(context.Background())
+		err := client.Connect()
+
+		fmt.Println("QR Channel created:", qrChan)
+
+		if err != nil {
+			panic(err)
+		}
+
+		for evt := range qrChan {
+
+			if evt.Event == "code" {
+				fmt.Println("QR Code received, please scan it:", evt.Code) //manually echo the code into the terminal and login to WhatsApp Web to let the bot control your WhatsApp account
+				
+				cmd := exec.Command("qrencode", "-o", "-", "-t", "UTF8", evt.Code)
+
+				output, err := cmd.Output()
+
+				if err != nil {
+					fmt.Println("Error generating QR code:", err)
+				} else {
+					fmt.Println("QR Code:")
+					fmt.Println(string(output))
+				}
+
+			} else {
+				fmt.Println("Event received:", evt.Event)
+			}
+
+		}
+
 	} else {
+		err := client.Connect()
+		if err != nil {
+			panic(err)
+		}
+
 		fmt.Println("Using existing device ID:", client.Store.ID)
 	}
 
