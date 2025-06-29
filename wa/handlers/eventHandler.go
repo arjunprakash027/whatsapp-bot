@@ -17,7 +17,9 @@ func HandleEvent(evt interface{}) {
 				txt,
 			)
 		}
+		
 	case *events.HistorySync:
-		log.Printf("History sync completed")
+		log.Printf("History sync event started")
+		HistoryHandler(v)
 	}
 }
