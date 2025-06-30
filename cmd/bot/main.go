@@ -15,13 +15,12 @@ import (
 	"whatsapp-bot/wa/handlers" //HandleEvent handler is imported from here
 
 	"whatsapp-bot/db"
+
+	"whatsapp-bot/utils" //This is a utility package that has some helper functions, like config reader and so on
 )
 
 
 func main() {
-	
-	
-
 	
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -29,6 +28,14 @@ func main() {
 	// Initializing the database before connecting to wa
 	if err := db.InitDB(); err != nil { log.Fatalf("failed to initialize database: %v", err) }
 	if err := db.PrepareConvoInsertStatement(ctx); err != nil {log.Fatalf("failed to prepare conversation insert statement: %v", err) }
+
+	// Reading config file to get the configurations
+
+	config, err := utils.ReadConfig("config.yaml")
+	if err != nil {
+		log.Fatalf("failed to read config file: %v", err)
+	}
+	log.Printf("whitelisted chats: %v", config.Whatsapp.WhiteListedChats)
 
 	//Initilazing the connection to whatsapp
 	client, err := wa.Connect(ctx, handlers.HandleEvent) 

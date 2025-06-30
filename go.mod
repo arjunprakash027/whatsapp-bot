@@ -7,6 +7,7 @@ toolchain go1.24.4
 require (
 	github.com/mattn/go-sqlite3 v1.14.28
 	go.mau.fi/whatsmeow v0.0.0-20250617170509-947866bb9f75
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
