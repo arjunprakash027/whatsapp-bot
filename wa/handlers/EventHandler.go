@@ -52,6 +52,8 @@ func StoreConvo(
 	v *events.Message,
 	txt, channel string,
 ) {
+
+	const read_by_ai = 0
 	err := db.SaveConvoMessage(
 		ctx,
 		v.Info.ID,
@@ -60,6 +62,7 @@ func StoreConvo(
 		txt,
 		channel,
 		v.Info.Timestamp,
+		read_by_ai,
 	)
 
 	if err != nil {

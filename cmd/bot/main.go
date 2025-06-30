@@ -48,16 +48,28 @@ func main() {
 	log.Println("connected to WhatsApp")
 
 	// This is how we send a message to a whatsapp chat, will be used by the bot to send messages
-	err = handlers.SendText(
+	// err = handlers.SendText(
+	// 	ctx,
+	// 	client,
+	// 	config.Whatsapp.WhiteListedChats[0],
+	// 	"Hello from WhatsApp Bot!",
+	// )
+
+	// if err != nil {
+	// 	log.Println("failed to send message: %v", err)
+	// }
+
+	//read from db
+	msg, err := db.GetConvoMessageByID(
 		ctx,
-		client,
-		config.Whatsapp.WhiteListedChats[0],
-		"Hello from WhatsApp Bot!",
+		"",
 	)
 
 	if err != nil {
-		log.Println("failed to send message: %v", err)
+		log.Printf("failed to get message by ID: %v", err)
 	}
+
+	log.Printf("Incoming message read from db: [%s] %s", msg.ChatJID, msg.Text)
 
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
