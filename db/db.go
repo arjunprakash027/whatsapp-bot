@@ -22,7 +22,7 @@ func InitDB() error {
 
 	log.Println("running migrations for connections.db")
 	
-	sqlBytes, err := os.ReadFile("db/conversations.sql")
+	sqlBytes, err := os.ReadFile("sql/conversations.sql")
 	if err != nil {
 		return err               
 	}

@@ -7,6 +7,7 @@ toolchain go1.24.4
 require (
 	github.com/mattn/go-sqlite3 v1.14.28
 	go.mau.fi/whatsmeow v0.0.0-20250617170509-947866bb9f75
+	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -25,5 +26,4 @@ require (
 	golang.org/x/net v0.41.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/text v0.26.0 // indirect
-	google.golang.org/protobuf v1.36.6 // indirect
 )
