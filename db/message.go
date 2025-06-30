@@ -44,25 +44,41 @@ func SaveConvoMessage(
 	return err
 }
 
-func GetConvoMessageByID (ctx context.Context, id string) (*Message, error) {
+func GetConvoMessagesUnProcessed (ctx context.Context) ([]Message, error) {
 	
 	const q = `
 	    SELECT id, chat_jid, sender_jid, timestamp, text, channel, read_by_ai
 	    FROM   messages
-	    WHERE  id = ?;
+	    WHERE  read_by_ai = 0;
 	`
 
-	var msg Message
+	rows, err := Conn.QueryContext(ctx, q)
 
-	err := Conn.QueryRowContext(ctx, q, id).Scan(
-		&msg.ID, &msg.ChatJID, &msg.SenderJID, &msg.Timestamp,
-		&msg.Text, &msg.Channel, &msg.ReadByAI,
-	)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-	if err == sql.ErrNoRows {
-		return nil, nil
+	var msgs []Message
+
+	for rows.Next() {
+		var msg Message
+		err := rows.Scan(
+			&msg.ID, &msg.ChatJID, &msg.SenderJID, &msg.Timestamp,
+			&msg.Text, &msg.Channel, &msg.ReadByAI,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		msgs = append(msgs, msg)
 	}
 
-	return &msg, err
+	if err := rows.Err(); err != nil {     
+		return nil, err
+	}
+
+	return msgs, err
 }
 

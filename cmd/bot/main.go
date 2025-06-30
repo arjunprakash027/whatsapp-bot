@@ -60,17 +60,16 @@ func main() {
 	// }
 
 	//read from db
-	msg, err := db.GetConvoMessageByID(
-		ctx,
-		"",
-	)
+	msgs, err := db.GetConvoMessagesUnProcessed(ctx)
 
 	if err != nil {
 		log.Printf("failed to get message by ID: %v", err)
 	}
 
-	log.Printf("Incoming message read from db: [%s] %s", msg.ChatJID, msg.Text)
-
+	for _, msg := range msgs {
+		log.Printf("Incoming message read from db: [%s] %s", msg.ChatJID, msg.Text)
+	}
+	
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	<-sig
