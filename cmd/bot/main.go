@@ -10,14 +10,20 @@ import (
 
 	//"go.mau.fi/whatsmeow/types/events"
 
-	"whatsapp-bot/wa"
+	"whatsapp-bot/wa" //Has the connection functionality to WhatsApp
 
-	"whatsapp-bot/wa/handlers"
+	"whatsapp-bot/wa/handlers" //HandleEvent handler is imported from here
+
+	"whatsapp-bot/db"
 )
 
 
 func main() {
 	
+	// Initializing the database before connecting to wa
+	db.InitDB()
+
+	//Initilazing the connection to whatsapp
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
