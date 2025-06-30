@@ -20,13 +20,17 @@ import (
 
 func main() {
 	
-	// Initializing the database before connecting to wa
-	db.InitDB()
+	
 
-	//Initilazing the connection to whatsapp
+	
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// Initializing the database before connecting to wa
+	if err := db.InitDB(); err != nil { log.Fatalf("failed to initialize database: %v", err) }
+	if err := db.PrepareConvoInsertStatement(ctx); err != nil {log.Fatalf("failed to prepare conversation insert statement: %v", err) }
+
+	//Initilazing the connection to whatsapp
 	client, err := wa.Connect(ctx, handlers.HandleEvent) 
 
 	if err != nil {

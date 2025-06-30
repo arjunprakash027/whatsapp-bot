@@ -7,6 +7,7 @@ import (
 )
 
 func HistoryHandler(history *events.HistorySync) {
+
 	for _, conv := range history.Data.Conversations {
 		
 		if conv.ID == nil {
