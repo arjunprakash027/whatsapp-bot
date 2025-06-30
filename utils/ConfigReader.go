@@ -8,8 +8,8 @@ import (
 
 type Config struct {
 	Whatsapp struct {
-		WhiteListedChats []string `yaml:"whitelisted_chats"`
-	} `yaml:"whatsapp"`
+		WhiteListedChats []string `yaml:"WhiteListedChats"`
+	} `yaml:"Whatsapp"`
 }
 
 func ReadConfig(filePath string) (*Config, error) {

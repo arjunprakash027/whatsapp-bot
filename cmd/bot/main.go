@@ -30,15 +30,15 @@ func main() {
 	if err := db.PrepareConvoInsertStatement(ctx); err != nil {log.Fatalf("failed to prepare conversation insert statement: %v", err) }
 
 	// Reading config file to get the configurations
-
 	config, err := utils.ReadConfig("config.yaml")
 	if err != nil {
 		log.Fatalf("failed to read config file: %v", err)
 	}
-	log.Printf("whitelisted chats: %v", config.Whatsapp.WhiteListedChats)
 
 	//Initilazing the connection to whatsapp
-	client, err := wa.Connect(ctx, handlers.HandleEvent) 
+	client, err := wa.Connect(ctx, func(evt interface{}) {
+		handlers.HandleEvent(evt, config) // A closure that handles whatsapp events as defined by config
+	})
 
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
