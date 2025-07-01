@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"runtime"
+	"sync"
 	//"time"
 
 	//"go.mau.fi/whatsmeow/types/events"
@@ -36,15 +38,26 @@ func main() {
 		log.Fatalf("failed to read config file: %v", err)
 	}
 
+	//Setup a event channel to unbloack whatsapp events 
+	eventChan := make(chan interface{}, 500)
+
 	//Initilazing the connection to whatsapp
 	client, err := wa.Connect(ctx, func(evt interface{}) {
-		handlers.HandleEvent(evt, config) // A closure that handles whatsapp events as defined by config
+		select {
+		case eventChan <- evt:
+		default:handlers.HandleEvent(evt, config)
+			log.Println("event channel is full, dropping event to avoid blocking")	
+		} // A closure that handles whatsapp events as defined by config
 	})
+
 
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}
 	defer client.Disconnect()
+
+	workerN := runtime.NumCPU()
+	wg := startWorkers(ctx, workerN, eventChan, config)
 
 	log.Println("connected to WhatsApp")
 
@@ -69,5 +82,49 @@ func main() {
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	<-sig
-	log.Println("shutting down")
+
+	close(eventChan)
+	wg.Wait() // Wait for all workers to finish
+	log.Println("shut down complete")
+}
+
+func startWorkers(
+	ctx context.Context,
+	workerN int,
+	eventChan <-chan interface{},
+	cfg *utils.Config,
+) *sync.WaitGroup {
+
+	var wg sync.WaitGroup
+	wg.Add(workerN)
+
+	for i := 0; i < workerN; i++ {
+		id := i
+
+		go func(id int) {
+			defer wg.Done()
+
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("worker %d panic: %v", id, r)
+				}
+			}()
+
+			for {
+				select {
+				case <-ctx.Done():
+					return
+				case evt, ok := <-eventChan:
+					if !ok {
+						log.Printf("worker %d: event channel closed", id)
+						return
+					}
+					handlers.HandleEvent(evt, cfg)
+				}
+			}
+		}(id)
+
+	}
+
+	return &wg
 }
