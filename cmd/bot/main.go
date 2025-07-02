@@ -45,7 +45,8 @@ func main() {
 	client, err := wa.Connect(ctx, func(evt interface{}) {
 		select {
 		case eventChan <- evt:
-		default:handlers.HandleEvent(evt, config)
+		default:
+			handlers.HandleEvent(evt, config)
 			log.Println("event channel is full, dropping event to avoid blocking")	
 		} // A closure that handles whatsapp events as defined by config
 	})
