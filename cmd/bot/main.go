@@ -74,12 +74,9 @@ func main() {
 	// 	log.Println("failed to send message: %v", err)
 	// }
 
-	//Process message by AI
-	if err := agents.ProcessMessageByAI(ctx); err != nil {
-		log.Printf("failed to process message by AI: %v", err)
-	}
+	//Process message by AI in a non blocking background goroutine
+	go agents.ProcessMessageByAIPoller(ctx, config)
 
-	
 	sig := make(chan os.Signal, 1)
 	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 	<-sig

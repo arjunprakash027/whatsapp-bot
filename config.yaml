@@ -1,3 +1,8 @@
 Whatsapp:
   WhiteListedChats:
     - 120363027892302133@g.us
+  
+AI:
+  Controls:
+    PollingInterval: 300 #in seconds
+    WorkerCount: 3

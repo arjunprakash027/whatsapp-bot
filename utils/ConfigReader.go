@@ -10,6 +10,13 @@ type Config struct {
 	Whatsapp struct {
 		WhiteListedChats []string `yaml:"WhiteListedChats"`
 	} `yaml:"Whatsapp"`
+
+	AI struct {
+		Controls struct {
+			PollingInterval int `yaml:"PollingInterval"` // in seconds
+			WorkerCount     int `yaml:"WorkerCount"`     // number of AI workers
+		} `yaml:"Controls"`
+	}
 }
 
 func ReadConfig(filePath string) (*Config, error) {

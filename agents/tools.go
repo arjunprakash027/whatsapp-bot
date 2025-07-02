@@ -3,16 +3,36 @@ package agents
 import (
 	"context"
 	"log"
-	//"time"
+	"time"
 	"whatsapp-bot/db"
 	"sync"
-	"runtime"
+	"whatsapp-bot/utils"
 	//"whatsapp-bot/wa"
 	//"whatsapp-bot/wa/handlers"
 )
 
-func ProcessMessageByAI (ctx context.Context) error {
-	
+func ProcessMessageByAIPoller (
+	ctx context.Context, 
+	Config *utils.Config,
+	) {
+		ticker := time.NewTicker(10*time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				log.Println("AI Poller stopped")
+				return
+			case <-ticker.C:
+				if err := ProcessBatchAI(ctx, Config.AI.Controls.WorkerCount); err != nil {
+					log.Printf("failed to process batch AI: %v", err)
+				}
+			}
+		}
+	}
+
+func ProcessBatchAI(ctx context.Context, workerN int) error {
+
 	var resp *AgentHouseResponse
 	msgs, err := db.GetConvoMessagesUnProcessed(ctx)
 
@@ -21,11 +41,10 @@ func ProcessMessageByAI (ctx context.Context) error {
 	}
 
 	if len(msgs) == 0{
-		log.Println("No unprocessed messages found")
+		log.Println("No unprocessed messages found by polling")
 		return nil
 	}
 
-	workerN := runtime.NumCPU()
 	jobsChan := make(chan db.Message, len(msgs))
 	var wg sync.WaitGroup
 	wg.Add(workerN)
@@ -92,5 +111,4 @@ func ProcessMessageByAI (ctx context.Context) error {
 
 	wg.Wait()
 	return err
-
 }
