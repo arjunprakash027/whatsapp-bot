@@ -1,26 +1,24 @@
 package db
 
 import (
-
-	"database/sql"
 	"context"
+	"database/sql"
 	"time"
 )
 
 type Message struct {
 	ID, ChatJID, SenderJID, Text, Channel string
-	Timestamp int64
-	ReadByAI int64
+	Timestamp                             int64
+	ReadByAI                              int64
 }
-
 
 var ConvoInsertStmt *sql.Stmt
 
 func PrepareConvoInsertStatement(ctx context.Context) error {
-	
+
 	var err error
-	
-	ConvoInsertStmt, err = Conn.PrepareContext (ctx, `
+
+	ConvoInsertStmt, err = Conn.PrepareContext(ctx, `
 		INSERT OR IGNORE INTO messages 
 			(id, chat_jid, sender_jid, timestamp, text, channel, read_by_ai)
 		VALUES (?, ?, ?, ?, ?, ?, ?);
@@ -38,14 +36,14 @@ func SaveConvoMessage(
 
 	_, err := ConvoInsertStmt.ExecContext(ctx,
 		id, chat, sender, ts.Unix(),
-		text, channel, read_by_ai, 
+		text, channel, read_by_ai,
 	)
 
 	return err
 }
 
-func GetConvoMessagesUnProcessed (ctx context.Context) ([]Message, error) {
-	
+func GetConvoMessagesUnProcessed(ctx context.Context) ([]Message, error) {
+
 	const q = `
 	    SELECT id, chat_jid, sender_jid, timestamp, text, channel, read_by_ai
 	    FROM   messages
@@ -75,7 +73,7 @@ func GetConvoMessagesUnProcessed (ctx context.Context) ([]Message, error) {
 		msgs = append(msgs, msg)
 	}
 
-	if err := rows.Err(); err != nil {     
+	if err := rows.Err(); err != nil {
 		return nil, err
 	}
 

@@ -3,8 +3,8 @@ package db
 import (
 	"context"
 	"database/sql"
-	"log"
 	_ "github.com/mattn/go-sqlite3"
+	"log"
 	"os"
 )
 
@@ -22,10 +22,10 @@ func InitDB(ctx context.Context) error {
 	}
 
 	log.Println("running migrations for connections.db")
-	
+
 	sqlBytes, err := os.ReadFile("sql/conversations.sql")
 	if err != nil {
-		return err               
+		return err
 	}
 
 	_, err = Conn.Exec(string(sqlBytes))
@@ -35,9 +35,12 @@ func InitDB(ctx context.Context) error {
 	}
 
 	//prepare all the insert statements once
-	if err = PrepareConvoInsertStatement(ctx); err != nil {log.Fatalf("failed to prepare conversation insert statement: %v", err) }
-	if err = PrepareProcessedInsertStatement(ctx); err != nil {log.Fatalf("Failed to prepare processed insert statement: %v", err)}
+	if err = PrepareConvoInsertStatement(ctx); err != nil {
+		log.Fatalf("failed to prepare conversation insert statement: %v", err)
+	}
+	if err = PrepareProcessedInsertStatement(ctx); err != nil {
+		log.Fatalf("Failed to prepare processed insert statement: %v", err)
+	}
 
 	return err
 }
-

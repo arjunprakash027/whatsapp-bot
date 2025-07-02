@@ -1,12 +1,12 @@
 package handlers
 
 import (
-	"log"
 	"context"
+	"go.mau.fi/whatsmeow/types/events"
+	"log"
+	"time"
 	"whatsapp-bot/db"
 	"whatsapp-bot/utils"
-	"go.mau.fi/whatsmeow/types/events"
-	"time"
 )
 
 var ctx = context.Background()
@@ -26,7 +26,7 @@ func HandleEvent(
 				v.Info.Chat.String(),
 				txt,
 			)
-			
+
 			// save the convo to database
 			// After serious thought, I decided linear scan is the best way, everything else is just overkill
 			// Check if there are any whitelisted chats in the config, if yes only save them, else save all messages - this is primarily done to avoid unncessary database writes and space
@@ -38,10 +38,10 @@ func HandleEvent(
 					}
 				}
 			} else {
-				StoreConvo(v,txt,"live-message")
+				StoreConvo(v, txt, "live-message")
 			}
 		}
-		
+
 	case *events.HistorySync:
 		log.Printf("History sync event started")
 		HistoryHandler(v)

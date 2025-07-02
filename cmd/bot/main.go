@@ -5,9 +5,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"syscall"
 	"runtime"
 	"sync"
+	"syscall"
 	//"time"
 
 	//"go.mau.fi/whatsmeow/types/events"
@@ -23,14 +23,15 @@ import (
 	"whatsapp-bot/agents" // This package contains the AI processing logic, like ProcessHouseMessage and ProcessMessageByAI
 )
 
-
 func main() {
-	
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
 	// Initializing the database before connecting to wa
-	if err := db.InitDB(ctx); err != nil { log.Fatalf("failed to initialize database: %v", err) }
+	if err := db.InitDB(ctx); err != nil {
+		log.Fatalf("failed to initialize database: %v", err)
+	}
 
 	// Reading config file to get the configurations
 	config, err := utils.ReadConfig("config.yaml")
@@ -38,7 +39,7 @@ func main() {
 		log.Fatalf("failed to read config file: %v", err)
 	}
 
-	//Setup a event channel to unbloack whatsapp events 
+	//Setup a event channel to unbloack whatsapp events
 	eventChan := make(chan interface{}, 500)
 
 	//Initilazing the connection to whatsapp
@@ -47,10 +48,9 @@ func main() {
 		case eventChan <- evt:
 		default:
 			handlers.HandleEvent(evt, config)
-			log.Println("event channel is full, dropping event to avoid blocking")	
+			log.Println("event channel is full, dropping event to avoid blocking")
 		} // A closure that handles whatsapp events as defined by config
 	})
-
 
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)

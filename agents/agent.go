@@ -1,20 +1,19 @@
 package agents
 
 import (
-//	"context"
+	//	"context"
 	"log"
-//	"time"
-
+	//	"time"
 )
 
 type AgentHouseResponse struct {
-	AiAddress         string // Address of the AI that processed the message
-	AiPrimaryContact  string // Primary contact of the AI that processed the message
+	AiAddress          string // Address of the AI that processed the message
+	AiPrimaryContact   string // Primary contact of the AI that processed the message
 	AiSecondaryContact string // Secondary contact of the AI that processed the message
-	AiMessage         string // The message that was processed by the AI
+	AiMessage          string // The message that was processed by the AI
 }
 
-func AIProcessHouseMessage(message string) (* AgentHouseResponse, error) {
+func AIProcessHouseMessage(message string) (*AgentHouseResponse, error) {
 
 	log.Printf("Processing house message: %s", message)
 
@@ -27,4 +26,3 @@ func AIProcessHouseMessage(message string) (* AgentHouseResponse, error) {
 	return &response, nil
 
 }
-

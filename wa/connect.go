@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"os/exec"
 
+	_ "github.com/mattn/go-sqlite3"
 	"go.mau.fi/whatsmeow"
 	"go.mau.fi/whatsmeow/store/sqlstore"
 	"go.mau.fi/whatsmeow/types/events"
-	_ "github.com/mattn/go-sqlite3"
 	waLog "go.mau.fi/whatsmeow/util/log"
 )
 
 func eventHandler(evt interface{}) {
-	switch v:= evt.(type) {
+	switch v := evt.(type) {
 	case *events.Message:
 		fmt.Println("Received message:", v.Message.GetConversation())
 	}
@@ -21,7 +21,7 @@ func eventHandler(evt interface{}) {
 
 func Connect(ctx context.Context, handler whatsmeow.EventHandler) (*whatsmeow.Client, error) {
 
-	dbLog := waLog.Stdout("DB","INFO",true)
+	dbLog := waLog.Stdout("DB", "INFO", true)
 
 	container, err := sqlstore.New(ctx, "sqlite3", "file:whatsapp.db?_foreign_keys=on", dbLog)
 	if err != nil {
@@ -40,7 +40,7 @@ func Connect(ctx context.Context, handler whatsmeow.EventHandler) (*whatsmeow.Cl
 	if client.Store.ID == nil {
 		fmt.Println("No device ID found, please scan the QR code.")
 		qrChan, _ := client.GetQRChannel(context.Background())
-		
+
 		if err = client.Connect(); err != nil {
 			return nil, fmt.Errorf("failed to connect client: %w", err)
 		}

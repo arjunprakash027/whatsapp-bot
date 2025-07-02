@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"log"
 	"go.mau.fi/whatsmeow/types"
 	"go.mau.fi/whatsmeow/types/events"
+	"log"
 )
 
 func HistoryHandler(history *events.HistorySync) {
 
 	for _, conv := range history.Data.Conversations {
-		
+
 		if conv.ID == nil {
 			log.Printf("Skipping history sync for conversation with no ID")
 			continue
