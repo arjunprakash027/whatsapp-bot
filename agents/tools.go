@@ -75,19 +75,26 @@ func ProcessBatchAI(ctx context.Context, workerN int) error {
 						log.Printf("AI worker %d: no more jobs", id)
 						return
 					}
-					log.Printf("AI worker %d processing message: %s", id, msg.Text)
-					resp, err = AIProcessHouseMessage(msg.Text)
-					if err != nil {
-						log.Printf("failed to process house message for msg ID %d: %v", msg.ID, err)
-						continue
-					}
 
-					log.Printf("Processed message: %s", resp.AiMessage)
-					err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID)
+					err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 1)
 					if err != nil {
 						log.Printf("failed to update convo message for msg ID %d: %v", msg.ID, err)
 						continue
 					}
+
+					log.Printf("AI worker %d processing message: %s", id, msg.Text)
+					resp, err = AIProcessHouseMessage(msg.Text)
+					if err != nil {
+						log.Printf("failed to process house message for msg ID %d: %v", msg.ID, err)
+						err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 0)
+						if err != nil {
+							log.Printf("failed to update convo message for msg ID %d: %v", msg.ID, err)
+						}
+
+						continue
+					} else {
+						log.Printf("AI worker %d processed message: %s", id, resp.AiMessage)
+					}					
 
 					err = db.SaveProcessedMessage(
 						ctx,
