@@ -15,6 +15,7 @@ func ProcessMessageByAIPoller(
 	ctx context.Context,
 	Config *utils.Config,
 ) {
+
 	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
@@ -62,7 +63,7 @@ func ProcessBatchAI(ctx context.Context, workerN int) error {
 
 			defer func() {
 				if r := recover(); r != nil {
-					log.Printf("AI worker %d panic: %v", id, r)
+					log.Printf("AI worker %d panic: %v", r)
 				}
 			}()
 
@@ -76,7 +77,7 @@ func ProcessBatchAI(ctx context.Context, workerN int) error {
 						return
 					}
 
-					err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 1)
+					err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 0)
 					if err != nil {
 						log.Printf("failed to update convo message for msg ID %d: %v", msg.ID, err)
 						continue
@@ -84,6 +85,9 @@ func ProcessBatchAI(ctx context.Context, workerN int) error {
 
 					log.Printf("AI worker %d processing message: %s", id, msg.Text)
 					resp, err = AIProcessHouseMessage(msg.Text)
+
+					log.Printf("AI worker %d response: %+v", id, resp)
+
 					if err != nil {
 						log.Printf("failed to process house message for msg ID %d: %v", msg.ID, err)
 						err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 0)
@@ -96,21 +100,21 @@ func ProcessBatchAI(ctx context.Context, workerN int) error {
 						log.Printf("AI worker %d processed message: %s", id, resp.AiMessage)
 					}					
 
-					err = db.SaveProcessedMessage(
-						ctx,
-						msg.ID,
-						msg.ChatJID,
-						msg.SenderJID,
-						msg.Text,
-						resp.AiAddress,
-						resp.AiPrimaryContact,
-						resp.AiSecondaryContact,
-						resp.AiMessage,
-						0, // no message is sent yet
-					)
-					if err != nil {
-						log.Printf("failed to save processed message for msg ID %d: %v", msg.ID, err)
-					}
+					// err = db.SaveProcessedMessage(
+					// 	ctx,
+					// 	msg.ID,
+					// 	msg.ChatJID,
+					// 	msg.SenderJID,
+					// 	msg.Text,
+					// 	resp.AiAddress,
+					// 	resp.AiPrimaryContact,
+					// 	resp.AiSecondaryContact,
+					// 	resp.AiMessage,
+					// 	0, // no message is sent yet
+					// )
+					// if err != nil {
+					// 	log.Printf("failed to save processed message for msg ID %d: %v", msg.ID, err)
+					// }
 				}
 			}
 		}(id)

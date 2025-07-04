@@ -5,14 +5,14 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"runtime"
+	//"runtime"
 	"sync"
 	"syscall"
 	//"time"
 
 	//"go.mau.fi/whatsmeow/types/events"
 
-	"whatsapp-bot/wa" //Has the connection functionality to WhatsApp
+	_ "whatsapp-bot/wa" //Has the connection functionality to WhatsApp
 
 	"whatsapp-bot/wa/handlers" //HandleEvent handler is imported from here
 
@@ -43,24 +43,24 @@ func main() {
 	eventChan := make(chan interface{}, 500)
 
 	//Initilazing the connection to whatsapp
-	client, err := wa.Connect(ctx, func(evt interface{}) {
-		select {
-		case eventChan <- evt:
-		default:
-			handlers.HandleEvent(evt, config)
-			log.Println("event channel is full, dropping event to avoid blocking")
-		} // A closure that handles whatsapp events as defined by config
-	})
+	// client, err := wa.Connect(ctx, func(evt interface{}) {
+	// 	select {
+	// 	case eventChan <- evt:
+	// 	default:
+	// 		handlers.HandleEvent(evt, config)
+	// 		log.Println("event channel is full, dropping event to avoid blocking")
+	// 	} // A closure that handles whatsapp events as defined by config
+	// })
 
-	if err != nil {
-		log.Fatalf("failed to connect: %v", err)
-	}
-	defer client.Disconnect()
+	// if err != nil {
+	// 	log.Fatalf("failed to connect: %v", err)
+	// }
+	// defer client.Disconnect()
 
-	workerN := runtime.NumCPU()
-	wg := startWorkers(ctx, workerN, eventChan, config)
+	// workerN := runtime.NumCPU()
+	// wg := startWorkers(ctx, workerN, eventChan, config)
 
-	log.Println("connected to WhatsApp")
+	// log.Println("connected to WhatsApp")
 
 	// This is how we send a message to a whatsapp chat, will be used by the bot to send messages
 	// err = handlers.SendText(
@@ -82,7 +82,7 @@ func main() {
 	<-sig
 
 	close(eventChan)
-	wg.Wait() // Wait for all workers to finish
+	//wg.Wait() // Wait for all workers to finish
 	log.Println("shut down complete")
 }
 

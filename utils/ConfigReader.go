@@ -16,7 +16,7 @@ type Config struct {
 			PollingInterval int `yaml:"PollingInterval"` // in seconds
 			WorkerCount     int `yaml:"WorkerCount"`     // number of AI workers
 		} `yaml:"Controls"`
-	}
+	} `yaml:"AI"`
 }
 
 func ReadConfig(filePath string) (*Config, error) {
