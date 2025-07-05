@@ -28,17 +28,20 @@ func LevenshteinDistance(a, b string) int {
 	}
 
 	for i := 0; i < len(s2); i++ {
+
+		// this is the inserstion cost at the start
 		prev := i + 1
 
 		for j := 0; j < len(s1); j++ {
 
+			// this is the current cost to edit S2[j] to S2[i]
 			current := x[j] //this is the matching case
 			
 			if s1[j] != s2[i] {
 				current = min(
-					x[j],
-					prev,
-					x[j+1],
+					x[j], // this is the substitution cost
+					prev, // this as said before is the insertion cost
+					x[j+1], //This is the deletion cost
 				) + 1
 			} 
 		
