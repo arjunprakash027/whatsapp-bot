@@ -2,9 +2,11 @@ package utils
 
 import (
 	"unicode/utf8"
+	"strings"
+	"regexp"
 )
 
-func LevenshteinDistance(a, b string) int {
+func NormalizedLevenshteinDistance(a, b string) int {
 	// Satisfy the basic condititons
 	if a == b {
 		return 0
@@ -50,8 +52,31 @@ func LevenshteinDistance(a, b string) int {
 		}
 
 		x[len(s1)] = prev
+	}	
+
+	maxLength := max(len(s1),len(s2))
+	return x[len(s1)] / maxLength
+}
+
+func NormalizeText(text string) string {
+
+	text = strings.ToLower(text)
+
+	// Remove emojis
+	emojiRegex := regexp.MustCompile(`[\x{1F600}-\x{1F64F}]|[\x{1F300}-\x{1F5FF}]|[\x{1F680}-\x{1F6FF}]|[\x{1F900}-\x{1F9FF}]|[\x{2600}-\x{26FF}]|[\x{2700}-\x{27BF}]`)
+	text = emojiRegex.ReplaceAllString(text, "")
+
+	//put everything under single line
+	text = strings.ReplaceAll(text, "\n", " ")
+	text = strings.ReplaceAll(text, "\r", " ")
+
+	// remove the extra spaces, the loop is required because the replacement happens only once and it must be iterated again
+	for strings.Contains(text, "  ") {
+		text = strings.ReplaceAll(text, "  ", " ")
 	}
 
-	return x[len(s1)]
+	text = strings.TrimSpace(text)
+
+	return text
 }
 
