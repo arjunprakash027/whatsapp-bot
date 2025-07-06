@@ -5,14 +5,15 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	//"runtime"
+	"runtime"
 	"sync"
 	"syscall"
+	"flag"
 	//"time"
 
 	//"go.mau.fi/whatsmeow/types/events"
 
-	_ "whatsapp-bot/wa" //Has the connection functionality to WhatsApp
+	"whatsapp-bot/wa" //Has the connection functionality to WhatsApp
 
 	"whatsapp-bot/wa/handlers" //HandleEvent handler is imported from here
 
@@ -24,6 +25,9 @@ import (
 )
 
 func main() {
+
+	mode := flag.String("mode", "all", "Execution mode: collect, process, dispatch, all")
+	flag.Parse()
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -39,29 +43,52 @@ func main() {
 		log.Fatalf("failed to read config file: %v", err)
 	}
 
-	//Setup a event channel to unbloack whatsapp events
-	eventChan := make(chan interface{}, 500)
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
 
-	//Initilazing the connection to whatsapp
-	// client, err := wa.Connect(ctx, func(evt interface{}) {
-	// 	select {
-	// 	case eventChan <- evt:
-	// 	default:
-	// 		handlers.HandleEvent(evt, config)
-	// 		log.Println("event channel is full, dropping event to avoid blocking")
-	// 	} // A closure that handles whatsapp events as defined by config
-	// })
+	switch *mode {
+	case "collect":
+		go func () {
+			<-sig
+			log.Println("Shutdown Signal Received!, cancelling context")
+			cancel()
+		} ()
+		runCollectMode(ctx, config)
 
-	// if err != nil {
-	// 	log.Fatalf("failed to connect: %v", err)
-	// }
-	// defer client.Disconnect()
+	case "process":
+		go func () {
+			<-sig
+			log.Println("Shutdown Signal Received!, cancelling context")
+			cancel()
+		} ()
+		runProcessMode(ctx, config)
 
-	// workerN := runtime.NumCPU()
-	// wg := startWorkers(ctx, workerN, eventChan, config)
+	case "all":
+		var wg sync.WaitGroup
+		wg.Add(2)
 
-	// log.Println("connected to WhatsApp")
+		go func() {
+			defer wg.Done()
+			runCollectMode(ctx, config)
+		}()
+		
+		go func() {
+			defer wg.Done()
+			runProcessMode(ctx, config)
+		}()
 
+		go func () {
+			<-sig
+			log.Println("Shutdown Signal Received!, cancelling context")
+			cancel()
+		}()
+
+		wg.Wait()
+
+	default:
+		log.Printf("Invalid mode: %s. Valid options: collect, process, dispatch, all\n", *mode)
+		os.Exit(1)
+	}
 	// This is how we send a message to a whatsapp chat, will be used by the bot to send messages
 	// err = handlers.SendText(
 	// 	ctx,
@@ -74,16 +101,48 @@ func main() {
 	// 	log.Println("failed to send message: %v", err)
 	// }
 
-	//Process message by AI in a non blocking background goroutine
-	go agents.ProcessMessageByAIPoller(ctx, config)
+	log.Println("shut down complete")
+}
 
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, syscall.SIGTERM)
-	<-sig
+func runCollectMode(ctx context.Context, config *utils.Config) {
+
+	log.Println("Starting Collect Mode")
+	//Setup a event channel to unbloack whatsapp events
+	eventChan := make(chan interface{}, 500)
+
+	//Initilazing the connection to whatsapp
+	client, err := wa.Connect(ctx, func(evt interface{}) {
+		select {
+		case eventChan <- evt:
+		default:
+			handlers.HandleEvent(evt, config)
+			log.Println("event channel is full, dropping event to avoid blocking")
+		} // A closure that handles whatsapp events as defined by config
+	})
+
+	if err != nil {
+		log.Fatalf("failed to connect: %v", err)
+	}
+	defer client.Disconnect()
+
+	workerN := runtime.NumCPU()
+	wg := startWorkers(ctx, workerN, eventChan, config)
+
+	log.Println("connected to WhatsApp")
+
+	<-ctx.Done()
+	log.Println("Collect mode shutting down!")
 
 	close(eventChan)
-	//wg.Wait() // Wait for all workers to finish
-	log.Println("shut down complete")
+	wg.Wait()
+	log.Println("Collect mode shutdown complete")
+}
+
+func runProcessMode (ctx context.Context, config *utils.Config) {
+	log.Println("Starting Process Mode")
+	//Process message by AI in a non blocking background goroutine
+	agents.ProcessMessageByAIPoller(ctx, config)
+	log.Println("Process Mode Shutdown")
 }
 
 func startWorkers(
