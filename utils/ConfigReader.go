@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Whatsapp struct {
 		WhiteListedChats []string `yaml:"WhiteListedChats"`
+		MessageReceiver string `yaml:"MessageReceiver"`
 	} `yaml:"Whatsapp"`
 
 	AI struct {

@@ -49,13 +49,13 @@ func main() {
 
 	switch *mode {
 	case "collect":
+		client, eventChan, _ := setupWhatsmeowClient(ctx, config)
 		go func () {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
+			close(eventChan)
 			cancel()
 		} ()
-
-		client, eventChan, _ := setupWhatsmeowClient(ctx, config)
 		runCollectMode(client, eventChan, ctx, config)
 
 	case "process":
@@ -67,13 +67,15 @@ func main() {
 		runProcessMode(ctx, config)
 	
 	case "dispatch":
+		client, eventChan, _ := setupWhatsmeowClient(ctx, config)
 		go func() {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
+			close(eventChan)
 			cancel()
 		} ()
-		client ,_ ,_ := setupWhatsmeowClient(ctx, config)
 		runDispatchMode(client, ctx, config)
+		
 
 	case "all":
 		var wg sync.WaitGroup
@@ -99,6 +101,7 @@ func main() {
 		go func () {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
+			close(eventChan)
 			cancel()
 		}()
 
@@ -136,7 +139,7 @@ func setupWhatsmeowClient(ctx context.Context, config *utils.Config) (*whatsmeow
 
 func runCollectMode(
 	client *whatsmeow.Client,
-	eventChan chan interface{}, 
+	eventChan <-chan interface{}, 
 	ctx context.Context, 
 	config *utils.Config,
 ) {
@@ -151,7 +154,6 @@ func runCollectMode(
 	<-ctx.Done()
 	log.Println("Collect mode shutting down!")
 
-	close(eventChan)
 	wg.Wait()
 	log.Println("Collect mode shutdown complete")
 }
@@ -163,20 +165,11 @@ func runProcessMode(ctx context.Context, config *utils.Config) {
 	log.Println("Process Mode Shutdown")
 }
 
-func runDispatchMode(client *whatsmeow.Client, ctx context.Context, Config *utils.Config) {
+func runDispatchMode(client *whatsmeow.Client, ctx context.Context, config *utils.Config) {
 	log.Println("Running Dispatch Mode")
-
-	// This is how we send a message to a whatsapp chat, will be used by the bot to send messages
-	// err = handlers.SendText(
-	// 	ctx,
-	// 	client,
-	// 	config.Whatsapp.WhiteListedChats[0],
-	// 	"Hello from WhatsApp Bot!",
-	// )
-
-	// if err != nil {
-	// 	log.Println("failed to send message: %v", err)
-	// }
+	// Dispatch all the messages that has been processed by AI
+	agents.DispatcherTool(client, ctx, config)
+	log.Println("Dispatch Mode Shutdown!")
 }
 
 func startWorkers(

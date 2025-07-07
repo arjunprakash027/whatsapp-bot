@@ -7,6 +7,8 @@ import (
 	"time"
 	"whatsapp-bot/db"
 	"whatsapp-bot/utils"
+	"whatsapp-bot/wa/handlers"
+	"go.mau.fi/whatsmeow"
 	//"whatsapp-bot/wa"
 	//"whatsapp-bot/wa/handlers"
 )
@@ -117,7 +119,6 @@ func ProcessBatchAI(ctx context.Context, workerN int, BenchmarkMessage string) e
 					} else {
 						log.Printf("AI worker %d refused to process the message due to high edit distance", id)
 					}
-										
 				}
 			}
 		}(id)
@@ -125,4 +126,76 @@ func ProcessBatchAI(ctx context.Context, workerN int, BenchmarkMessage string) e
 
 	wg.Wait()
 	return err
+}
+
+func DispatcherTool(client *whatsmeow.Client ,ctx context.Context, config *utils.Config) {
+	
+	batchComplete := make(chan struct{}, 1)
+
+	batchComplete <- struct{}{}
+
+	for {
+		select {
+		case <-ctx.Done():
+			log.Println("Dispatcher Poller stopped")
+			return
+		
+		case <-batchComplete:
+			unsentMessages, err := db.GetUnsentProcessedMessages(ctx)
+			if err != nil {
+				log.Fatalf("Error while retreiving unsent processed messages")
+			}
+
+			if len(unsentMessages) == 0 {
+				time.Sleep(20 * time.Second)
+				batchComplete <- struct{}{}
+				continue
+			}
+
+			go ProcessBatchDispatch(
+				client,
+				ctx,
+				config,
+				unsentMessages,
+				batchComplete,
+			)
+		}
+
+	}
+}
+
+func ProcessBatchDispatch(
+	client *whatsmeow.Client, 
+	ctx context.Context, 
+	config *utils.Config, 
+	messages []db.ProcessedMessage, 
+	completion chan<- struct{},
+) {
+	defer func() {
+		completion <- struct{}{}
+	}()
+	
+	ticker := time.NewTicker(15 * time.Second)
+	defer ticker.Stop()
+
+	for _, msg := range messages {
+
+		select {
+		case <-ctx.Done():
+			return
+
+		case <-ticker.C:
+			log.Println(msg)
+			err := handlers.SendText(
+				ctx,
+				client,
+				config.Whatsapp.MessageReceiver,
+				msg.AIMessage,
+			)
+
+			if err != nil {
+				log.Println("failed to send message:", err)
+			}
+		}
+	}
 }
