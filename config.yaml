@@ -13,3 +13,28 @@ AI:
   Controls:
     PollingInterval: 300 #in seconds
     WorkerCount: 3
+  
+  BenchmarkMessage: | # This is the message I use edit distance to compare with other messages to decide wether to use AI to process a message or not 
+      Immediate permanent /Temporary accommodations available
+      LOOKING for **TIDY,  CLEAN , QUITE,Non smoker,Non Drinker* 
+
+      *Contact* :+353 892564954
+
+      *Permanent accommodation for *:
+      1) Double occupancy available in a *Triple* sharing bedroom: 700 per person including bills. (Male only) 
+      Deposit same as rent 
+      2)Single room 900 including bills ( Male/Female)
+      3) Double room (Male/Female)
+      700 per person including bills 
+      Deposit same as rent 
+
+      It's 4 bhk house Two toilets and one bathroom
+
+      📍 Prime Location: Drumkeen manor, Dun Laoghaire
+
+      Bus stop 1 min walk 7 7a 111 45a
+
+      Supervalue and shopping center 1 min walk 
+
+      Lidl ,aldi ,tesco ,centra, all groceries electronics  10 min walk
+  

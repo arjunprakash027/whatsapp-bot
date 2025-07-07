@@ -25,14 +25,14 @@ func ProcessMessageByAIPoller(
 			log.Println("AI Poller stopped")
 			return
 		case <-ticker.C:
-			if err := ProcessBatchAI(ctx, Config.AI.Controls.WorkerCount); err != nil {
+			if err := ProcessBatchAI(ctx, Config.AI.Controls.WorkerCount, Config.AI.BenchmarkMessage); err != nil {
 				log.Printf("failed to process batch AI: %v", err)
 			}
 		}
 	}
 }
 
-func ProcessBatchAI(ctx context.Context, workerN int) error {
+func ProcessBatchAI(ctx context.Context, workerN int, BenchmarkMessage string) error {
 
 	var resp *AgentHouseResponse
 	msgs, err := db.GetConvoMessagesUnProcessed(ctx)
@@ -84,7 +84,7 @@ func ProcessBatchAI(ctx context.Context, workerN int) error {
 					}
 
 					log.Printf("AI worker %d processing message: %s", id, msg.Text)
-					resp, err = AIProcessHouseMessage(msg.Text)
+					resp, err = AIProcessHouseMessage(msg.Text, BenchmarkMessage)
 
 					log.Printf("AI worker %d response: %+v", id, resp)
 

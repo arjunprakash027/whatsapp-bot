@@ -4,20 +4,21 @@ import (
 	"unicode/utf8"
 	"strings"
 	"regexp"
+	"log"
 )
 
-func NormalizedLevenshteinDistance(a, b string) int {
+func NormalizedLevenshteinDistance(a, b string) float64 {
 	// Satisfy the basic condititons
 	if a == b {
 		return 0
 	}
 
 	if len(a) == 0 {
-		return utf8.RuneCountInString(b)
+		return float64(utf8.RuneCountInString(b))
 	}
 
 	if len(b) == 0 {
-		return utf8.RuneCountInString(a)
+		return float64(utf8.RuneCountInString(a))
 	}
 
 	s1 := []rune(a)
@@ -55,7 +56,9 @@ func NormalizedLevenshteinDistance(a, b string) int {
 	}	
 
 	maxLength := max(len(s1),len(s2))
-	return x[len(s1)] / maxLength
+	log.Println("Max length",maxLength)
+	log.Println("Distnace = ",x[len(s1)])
+	return float64(x[len(s1)]) / float64(maxLength)
 }
 
 func NormalizeText(text string) string {
