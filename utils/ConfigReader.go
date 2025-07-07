@@ -9,6 +9,7 @@ import (
 type Config struct {
 	Whatsapp struct {
 		WhiteListedChats []string `yaml:"WhiteListedChats"`
+		MessageReceiver string `yaml:"MessageReceiver"`
 	} `yaml:"Whatsapp"`
 
 	AI struct {
@@ -16,7 +17,9 @@ type Config struct {
 			PollingInterval int `yaml:"PollingInterval"` // in seconds
 			WorkerCount     int `yaml:"WorkerCount"`     // number of AI workers
 		} `yaml:"Controls"`
-	}
+
+		BenchmarkMessage string `yaml:"BenchmarkMessage"`
+	} `yaml:"AI"`
 }
 
 func ReadConfig(filePath string) (*Config, error) {

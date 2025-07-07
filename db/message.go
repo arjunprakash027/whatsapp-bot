@@ -83,13 +83,14 @@ func GetConvoMessagesUnProcessed(ctx context.Context) ([]Message, error) {
 func UpdateConvoMessageAIPRocessedByID(
 	ctx context.Context,
 	id string,
+	readByAI int64, // 0 for false, 1 for true
 ) error {
 	const q = `
         UPDATE messages
-        SET read_by_ai = 1
+        SET read_by_ai = ?
         WHERE id = ?;
     `
 
-	_, err := Conn.ExecContext(ctx, q, id)
+	_, err := Conn.ExecContext(ctx, q, readByAI, id)
 	return err
 }
