@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"unicode/utf8"
-	"strings"
-	"regexp"
 	"log"
+	"regexp"
+	"strings"
+	"unicode/utf8"
 )
 
 func NormalizedLevenshteinDistance(a, b string) float64 {
@@ -39,25 +39,25 @@ func NormalizedLevenshteinDistance(a, b string) float64 {
 
 			// this is the current cost to edit S2[j] to S2[i]
 			current := x[j] //this is the matching case
-			
+
 			if s1[j] != s2[i] {
 				current = min(
-					x[j], // this is the substitution cost
-					prev, // this as said before is the insertion cost
+					x[j],   // this is the substitution cost
+					prev,   // this as said before is the insertion cost
 					x[j+1], //This is the deletion cost
 				) + 1
-			} 
-		
+			}
+
 			x[j] = prev
 			prev = current
 		}
 
 		x[len(s1)] = prev
-	}	
+	}
 
-	maxLength := max(len(s1),len(s2))
-	log.Println("Max length",maxLength)
-	log.Println("Distnace = ",x[len(s1)])
+	maxLength := max(len(s1), len(s2))
+	log.Println("Max length", maxLength)
+	log.Println("Distnace = ", x[len(s1)])
 	return float64(x[len(s1)]) / float64(maxLength)
 }
 
@@ -82,4 +82,3 @@ func NormalizeText(text string) string {
 
 	return text
 }
-

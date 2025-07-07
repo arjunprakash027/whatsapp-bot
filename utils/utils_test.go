@@ -1,13 +1,13 @@
 package utils
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestLevenshteinDistance(t *testing.T) {
-	
-	got := NormalizedLevenshteinDistance("cat is where","cut is here")
+
+	got := NormalizedLevenshteinDistance("cat is where", "cut is here")
 	fmt.Println("LevenshteinDistance = ", got)
 
 	string_normalize := NormalizeText("CARLY \n does \r not    know why       🤔 ")

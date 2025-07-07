@@ -1,15 +1,15 @@
 package utils
 
 import (
+	"gopkg.in/yaml.v3"
 	"io/ioutil"
 	"log"
-	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
 	Whatsapp struct {
 		WhiteListedChats []string `yaml:"WhiteListedChats"`
-		MessageReceiver string `yaml:"MessageReceiver"`
+		MessageReceiver  string   `yaml:"MessageReceiver"`
 	} `yaml:"Whatsapp"`
 
 	AI struct {
@@ -39,6 +39,3 @@ func ReadConfig(filePath string) (*Config, error) {
 
 	return &config, nil
 }
-
-
-
