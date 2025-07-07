@@ -12,6 +12,7 @@ import (
 	//"time"
 
 	//"go.mau.fi/whatsmeow/types/events"
+	"go.mau.fi/whatsmeow"
 
 	"whatsapp-bot/wa" //Has the connection functionality to WhatsApp
 
@@ -53,7 +54,9 @@ func main() {
 			log.Println("Shutdown Signal Received!, cancelling context")
 			cancel()
 		} ()
-		runCollectMode(ctx, config)
+
+		client, eventChan, _ := setupWhatsmeowClient(ctx, config)
+		runCollectMode(client, eventChan, ctx, config)
 
 	case "process":
 		go func () {
@@ -69,15 +72,18 @@ func main() {
 			log.Println("Shutdown Signal Received!, cancelling context")
 			cancel()
 		} ()
-		runDispatchMode(ctx, config)
+		client ,_ ,_ := setupWhatsmeowClient(ctx, config)
+		runDispatchMode(client, ctx, config)
 
 	case "all":
 		var wg sync.WaitGroup
 		wg.Add(3)
 
+		client, eventChan, _ := setupWhatsmeowClient(ctx, config)
+
 		go func() {
 			defer wg.Done()
-			runCollectMode(ctx, config)
+			runCollectMode(client, eventChan, ctx, config)
 		}()
 		
 		go func() {
@@ -87,7 +93,7 @@ func main() {
 
 		go func() {
 			defer wg.Done()
-			runDispatchMode(ctx, config)
+			runDispatchMode(client ,ctx, config)
 		}()
 
 		go func () {
@@ -102,24 +108,11 @@ func main() {
 		log.Printf("Invalid mode: %s. Valid options: collect, process, dispatch, all\n", *mode)
 		os.Exit(1)
 	}
-	// This is how we send a message to a whatsapp chat, will be used by the bot to send messages
-	// err = handlers.SendText(
-	// 	ctx,
-	// 	client,
-	// 	config.Whatsapp.WhiteListedChats[0],
-	// 	"Hello from WhatsApp Bot!",
-	// )
-
-	// if err != nil {
-	// 	log.Println("failed to send message: %v", err)
-	// }
 
 	log.Println("shut down complete")
 }
 
-func runCollectMode(ctx context.Context, config *utils.Config) {
-
-	log.Println("Starting Collect Mode")
+func setupWhatsmeowClient(ctx context.Context, config *utils.Config) (*whatsmeow.Client, chan interface{},error) {
 	//Setup a event channel to unbloack whatsapp events
 	eventChan := make(chan interface{}, 500)
 
@@ -138,6 +131,18 @@ func runCollectMode(ctx context.Context, config *utils.Config) {
 	}
 	defer client.Disconnect()
 
+	return client, eventChan, err
+}
+
+func runCollectMode(
+	client *whatsmeow.Client,
+	eventChan chan interface{}, 
+	ctx context.Context, 
+	config *utils.Config,
+) {
+
+	log.Println("Starting Collect Mode")
+
 	workerN := runtime.NumCPU()
 	wg := startWorkers(ctx, workerN, eventChan, config)
 
@@ -151,11 +156,27 @@ func runCollectMode(ctx context.Context, config *utils.Config) {
 	log.Println("Collect mode shutdown complete")
 }
 
-func runProcessMode (ctx context.Context, config *utils.Config) {
+func runProcessMode(ctx context.Context, config *utils.Config) {
 	log.Println("Starting Process Mode")
 	//Process message by AI in a non blocking background goroutine
 	agents.ProcessMessageByAIPoller(ctx, config)
 	log.Println("Process Mode Shutdown")
+}
+
+func runDispatchMode(client *whatsmeow.Client, ctx context.Context, Config *utils.Config) {
+	log.Println("Running Dispatch Mode")
+
+	// This is how we send a message to a whatsapp chat, will be used by the bot to send messages
+	// err = handlers.SendText(
+	// 	ctx,
+	// 	client,
+	// 	config.Whatsapp.WhiteListedChats[0],
+	// 	"Hello from WhatsApp Bot!",
+	// )
+
+	// if err != nil {
+	// 	log.Println("failed to send message: %v", err)
+	// }
 }
 
 func startWorkers(
@@ -199,6 +220,3 @@ func startWorkers(
 	return &wg
 }
 
-func runDispatchMode(ctx context.Context, Config *utils.Config) {
-	log.Println("Running Dispatch Mode")
-}
