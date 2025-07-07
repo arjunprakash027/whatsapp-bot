@@ -62,10 +62,18 @@ func main() {
 			cancel()
 		} ()
 		runProcessMode(ctx, config)
+	
+	case "dispatch":
+		go func() {
+			<-sig
+			log.Println("Shutdown Signal Received!, cancelling context")
+			cancel()
+		} ()
+		runDispatchMode(ctx, config)
 
 	case "all":
 		var wg sync.WaitGroup
-		wg.Add(2)
+		wg.Add(3)
 
 		go func() {
 			defer wg.Done()
@@ -75,6 +83,11 @@ func main() {
 		go func() {
 			defer wg.Done()
 			runProcessMode(ctx, config)
+		}()
+
+		go func() {
+			defer wg.Done()
+			runDispatchMode(ctx, config)
 		}()
 
 		go func () {
@@ -184,4 +197,8 @@ func startWorkers(
 	}
 
 	return &wg
+}
+
+func runDispatchMode(ctx context.Context, Config *utils.Config) {
+	log.Println("Running Dispatch Mode")
 }
