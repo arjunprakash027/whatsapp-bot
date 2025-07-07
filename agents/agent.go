@@ -18,8 +18,7 @@ type AgentHouseResponse struct {
 func AIProcessHouseMessage(message string, BenchmarkMessage string) (*AgentHouseResponse, error) {
 
 	var EditDistanceNormalized float64
-	log.Printf("Processing house message: %s", utils.NormalizeText(message))
-	log.Println("Benchmark message normalized = ", utils.NormalizeText(BenchmarkMessage))
+	log.Printf("Processing house message: %s", message)
 
 	EditDistanceNormalized = utils.NormalizedLevenshteinDistance(
 		utils.NormalizeText(message),
@@ -28,11 +27,16 @@ func AIProcessHouseMessage(message string, BenchmarkMessage string) (*AgentHouse
 
 	log.Println("Edit Distance = ", EditDistanceNormalized)
 	var response AgentHouseResponse
-	response.AiAddress = "123 AI Street"
-	response.AiPrimaryContact = "AI Primary Contact"
-	response.AiSecondaryContact = "AI Secondary Contact"
-	response.AiMessage = "Processed message: " + message
-	response.AgreedToProcess = true
+
+	if EditDistanceNormalized > 0.74 {
+		response.AgreedToProcess = false
+	} else {
+		response.AiAddress = "123 AI Street"
+		response.AiPrimaryContact = "AI Primary Contact"
+		response.AiSecondaryContact = "AI Secondary Contact"
+		response.AiMessage = "we are group of 3 students looking for 2 rooms in Dublin (even number parts of dublin) and our budget is 550-600 per person. If the house is still up, we would love to have a chat \n Reference: \n" + message
+		response.AgreedToProcess = true
+	}
 
 	return &response, nil
 

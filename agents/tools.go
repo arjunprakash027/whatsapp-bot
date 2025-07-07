@@ -77,7 +77,7 @@ func ProcessBatchAI(ctx context.Context, workerN int, BenchmarkMessage string) e
 						return
 					}
 
-					err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 0)
+					err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 1)
 					if err != nil {
 						log.Printf("failed to update convo message for msg ID %d: %v", msg.ID, err)
 						continue
@@ -86,35 +86,38 @@ func ProcessBatchAI(ctx context.Context, workerN int, BenchmarkMessage string) e
 					log.Printf("AI worker %d processing message: %s", id, msg.Text)
 					resp, err = AIProcessHouseMessage(msg.Text, BenchmarkMessage)
 
-					log.Printf("AI worker %d response: %+v", id, resp)
+					if resp.AgreedToProcess {
+						log.Printf("AI worker %d response: %+v", id, resp)
 
-					if err != nil {
-						log.Printf("failed to process house message for msg ID %d: %v", msg.ID, err)
-						err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 0)
 						if err != nil {
-							log.Printf("failed to update convo message for msg ID %d: %v", msg.ID, err)
+							log.Printf("failed to process house message for msg ID %d: %v", msg.ID, err)
+							err = db.UpdateConvoMessageAIPRocessedByID(ctx, msg.ID, 0)
+							if err != nil {
+								log.Printf("failed to update convo message for msg ID %d: %v", msg.ID, err)
+							}
+							continue
+						} else {
+							log.Printf("AI worker %d processed message: %s", id, resp.AiMessage)
+							err = db.SaveProcessedMessage(
+								ctx,
+								msg.ID,
+								msg.ChatJID,
+								msg.SenderJID,
+								msg.Text,
+								resp.AiAddress,
+								resp.AiPrimaryContact,
+								resp.AiSecondaryContact,
+								resp.AiMessage,
+								0, // no message is sent yet
+							)
+							if err != nil {
+								log.Printf("failed to save processed message for msg ID %d: %v", msg.ID, err)
+							}
 						}
-
-						continue
 					} else {
-						log.Printf("AI worker %d processed message: %s", id, resp.AiMessage)
-					}					
-
-					// err = db.SaveProcessedMessage(
-					// 	ctx,
-					// 	msg.ID,
-					// 	msg.ChatJID,
-					// 	msg.SenderJID,
-					// 	msg.Text,
-					// 	resp.AiAddress,
-					// 	resp.AiPrimaryContact,
-					// 	resp.AiSecondaryContact,
-					// 	resp.AiMessage,
-					// 	0, // no message is sent yet
-					// )
-					// if err != nil {
-					// 	log.Printf("failed to save processed message for msg ID %d: %v", msg.ID, err)
-					// }
+						log.Printf("AI worker %d refused to process the message due to high edit distance", id)
+					}
+										
 				}
 			}
 		}(id)
