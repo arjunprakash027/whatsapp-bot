@@ -12,7 +12,7 @@ type AgentHouseResponse struct {
 	AiPrimaryContact   string // Primary contact of the AI that processed the message
 	AiSecondaryContact string // Secondary contact of the AI that processed the message
 	AiMessage          string // The message that was processed by the AI
-	AgreedToProcess    bool // true or false to see if a particualr message is agreed to be processed by AI 
+	AgreedToProcess    bool   // true or false to see if a particualr message is agreed to be processed by AI
 }
 
 func AIProcessHouseMessage(message string, BenchmarkMessage string) (*AgentHouseResponse, error) {

@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 	"os/signal"
 	"runtime"
 	"sync"
 	"syscall"
-	"flag"
 	//"time"
 
 	//"go.mau.fi/whatsmeow/types/events"
@@ -50,23 +50,23 @@ func main() {
 	switch *mode {
 	case "collect":
 		client, eventChan, _ := setupWhatsmeowClient(ctx, config)
-		go func () {
+		go func() {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
 			close(eventChan)
 			client.Disconnect()
 			cancel()
-		} ()
+		}()
 		runCollectMode(client, eventChan, ctx, config)
 
 	case "process":
-		go func () {
+		go func() {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
 			cancel()
-		} ()
+		}()
 		runProcessMode(ctx, config)
-	
+
 	case "dispatch":
 		client, eventChan, _ := setupWhatsmeowClient(ctx, config)
 		go func() {
@@ -75,9 +75,8 @@ func main() {
 			close(eventChan)
 			client.Disconnect()
 			cancel()
-		} ()
+		}()
 		runDispatchMode(client, ctx, config)
-		
 
 	case "all":
 		var wg sync.WaitGroup
@@ -89,7 +88,7 @@ func main() {
 			defer wg.Done()
 			runCollectMode(client, eventChan, ctx, config)
 		}()
-		
+
 		go func() {
 			defer wg.Done()
 			runProcessMode(ctx, config)
@@ -97,10 +96,10 @@ func main() {
 
 		go func() {
 			defer wg.Done()
-			runDispatchMode(client ,ctx, config)
+			runDispatchMode(client, ctx, config)
 		}()
 
-		go func () {
+		go func() {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
 			close(eventChan)
@@ -118,7 +117,7 @@ func main() {
 	log.Println("shut down complete")
 }
 
-func setupWhatsmeowClient(ctx context.Context, config *utils.Config) (*whatsmeow.Client, chan interface{},error) {
+func setupWhatsmeowClient(ctx context.Context, config *utils.Config) (*whatsmeow.Client, chan interface{}, error) {
 	//Setup a event channel to unbloack whatsapp events
 	eventChan := make(chan interface{}, 500)
 
@@ -141,8 +140,8 @@ func setupWhatsmeowClient(ctx context.Context, config *utils.Config) (*whatsmeow
 
 func runCollectMode(
 	client *whatsmeow.Client,
-	eventChan <-chan interface{}, 
-	ctx context.Context, 
+	eventChan <-chan interface{},
+	ctx context.Context,
 	config *utils.Config,
 ) {
 
@@ -214,4 +213,3 @@ func startWorkers(
 
 	return &wg
 }
-

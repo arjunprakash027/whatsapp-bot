@@ -75,7 +75,6 @@ go run cmd/bot/main.go --mode=collect
         # This is the message I use edit distance to compare with other messages to decide wether to use AI to process a message or not
         Immediate permanent /Temporary accommodations available
         LOOKING for **TIDY,  CLEAN , QUITE,Non smoker,Non Drinker*
-        *Contact* :+353 892564954
         *Permanent accommodation for *:
         1) Double occupancy available in a *Triple* sharing bedroom: 700 per person including bills. (Male only)
         Deposit same as rent

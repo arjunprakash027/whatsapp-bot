@@ -2,13 +2,13 @@ package agents
 
 import (
 	"context"
+	"go.mau.fi/whatsmeow"
 	"log"
 	"sync"
 	"time"
 	"whatsapp-bot/db"
 	"whatsapp-bot/utils"
 	"whatsapp-bot/wa/handlers"
-	"go.mau.fi/whatsmeow"
 	//"whatsapp-bot/wa"
 	//"whatsapp-bot/wa/handlers"
 )
@@ -128,8 +128,8 @@ func ProcessBatchAI(ctx context.Context, workerN int, BenchmarkMessage string) e
 	return err
 }
 
-func DispatcherTool(client *whatsmeow.Client ,ctx context.Context, config *utils.Config) {
-	
+func DispatcherTool(client *whatsmeow.Client, ctx context.Context, config *utils.Config) {
+
 	batchComplete := make(chan struct{}, 1)
 
 	batchComplete <- struct{}{}
@@ -139,7 +139,7 @@ func DispatcherTool(client *whatsmeow.Client ,ctx context.Context, config *utils
 		case <-ctx.Done():
 			log.Println("Dispatcher Poller stopped")
 			return
-		
+
 		case <-batchComplete:
 			unsentMessages, err := db.GetUnsentProcessedMessages(ctx)
 			if err != nil {
@@ -165,16 +165,16 @@ func DispatcherTool(client *whatsmeow.Client ,ctx context.Context, config *utils
 }
 
 func ProcessBatchDispatch(
-	client *whatsmeow.Client, 
-	ctx context.Context, 
-	config *utils.Config, 
-	messages []db.ProcessedMessage, 
+	client *whatsmeow.Client,
+	ctx context.Context,
+	config *utils.Config,
+	messages []db.ProcessedMessage,
 	completion chan<- struct{},
 ) {
 	defer func() {
 		completion <- struct{}{}
 	}()
-	
+
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
