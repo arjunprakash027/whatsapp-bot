@@ -54,6 +54,7 @@ func main() {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
 			close(eventChan)
+			client.Disconnect()
 			cancel()
 		} ()
 		runCollectMode(client, eventChan, ctx, config)
@@ -72,6 +73,7 @@ func main() {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
 			close(eventChan)
+			client.Disconnect()
 			cancel()
 		} ()
 		runDispatchMode(client, ctx, config)
@@ -102,6 +104,7 @@ func main() {
 			<-sig
 			log.Println("Shutdown Signal Received!, cancelling context")
 			close(eventChan)
+			client.Disconnect()
 			cancel()
 		}()
 
@@ -132,7 +135,6 @@ func setupWhatsmeowClient(ctx context.Context, config *utils.Config) (*whatsmeow
 	if err != nil {
 		log.Fatalf("failed to connect: %v", err)
 	}
-	defer client.Disconnect()
 
 	return client, eventChan, err
 }
